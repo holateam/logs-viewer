@@ -40,3 +40,16 @@ users.forEach(user => {
 
   server.listen(user.port);
 });
+
+function dataToJSON(data) {
+    let tempData = data.split(" ");
+    tempData[1] = tempData[1].substr(0, 10) + " " + tempData[1].substr(11,8);
+    let data = {
+        'date':`${tempData[1]}`,
+        'user_id': `${user.host}:${user.port}`,
+        'sender_ip': `${tempData[2]}`,
+        'file_name': `${tempData[3]}`,
+        'message': `${tempData[7]}`
+    };
+    return data;
+}
