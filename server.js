@@ -3,13 +3,13 @@ const PORT = 3000;
 const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-const queryDB = require('./modules/queryDB');
+const queryDB = require("./modules/queryDB");
 
 let connectedUsers = new Map();
 
-app.get('/', function (req, res) {
-    app.use(express.static(__dirname + '/public/'));
-    res.sendFile(__dirname + '/public/index.html');
+app.get("/", function (req, res) {
+    app.use(express.static(__dirname + "/public/"));
+    res.sendFile(__dirname + "/public/index.html");
 });
 
 http.listen(PORT, function(){
@@ -44,6 +44,8 @@ io.on("connection", function (socket){
             filter_search: filterSearch
         }).then(result => {
             socket.emit("send logs", result);
+        }).catch(error => {
+            console.log(error);
         });
     });
 
