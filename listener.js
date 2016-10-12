@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const db = require('./modules/db');
 const UserLogSchema = require('./modules/userLog');
+const queryDB = require('./modules/queryDB');
 
 let users = [{
-  "host": "new.holateam.io",
+  "host": "localhost",
   "port": "30000"
 }];
 
@@ -18,7 +19,7 @@ users.forEach(user => {
       // convert data to JSON
 
       // write JSON to DB
-      onDataReceived(data)
+      onDataReceived(data, user);
 
       //socketIO.emit("new_logs_received", data);
       //socket.end();
@@ -29,8 +30,8 @@ users.forEach(user => {
 });
 
 
-function dataToJSON(data) {
-    let tempData = data.split(" ");
+function dataToJSON(data, user) {
+    let tempData = data.toString().split(" ");
     tempData[1] = tempData[1].substr(0, 10) + " " + tempData[1].substr(11,8);
     let result = {
         'date':`${tempData[1]}`,
@@ -42,23 +43,22 @@ function dataToJSON(data) {
     return result;
 }
 
-function generateEntityFromData (data){
-    // return  dataToJSON(data);
-    console.log("my Log: "+data);
-    return {
-        date: "2016-10-06 23:59:59",
-        user_id: `localhost:30000`,
-        sender_ip: '127.0.0.1',
-        file_name: 'admin.log',
-        message: 'Some body text'
-    };
+function generateEntityFromData (data, user){
+    return  dataToJSON(data, user);
+    // return {
+    //     date: "2016-10-06 23:59:59",
+    //     user_id: `localhost:30000`,
+    //     sender_ip: '127.0.0.1',
+    //     file_name: 'admin.log',
+    //     message: 'Some body text'
+    // };
 }
 
 function onDataSaved(err){
     if (err) throw err;
 }
 
-function onDataReceived(data){
-     let record = new UserLogSchema(generateEntityFromData (data));
+function onDataReceived(data, user){
+     let record = new UserLogSchema(generateEntityFromData (data, user));
      record.save(onDataSaved);
 }
