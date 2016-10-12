@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const db = require('./modules/db');
 const bodyParser = require('body-parser');
-var UserLogSchema = require('./modules/userLog');
+const UserLogSchema = require('./modules/userLog');
 
 let users = [{
   "host": "localhost",
@@ -19,18 +19,7 @@ users.forEach(user => {
       // convert data to JSON
 
       // write JSON to DB
-      var record = new UserLogSchema(
-          {
-              date: "2016-10-06 23:59:59",
-              user_id: `${user.host}:${user.port}`,
-              sender_ip: '127.0.0.1',
-              file_name: 'admin.log',
-              message: 'Some body text'
-          });
-      record.save(function (err) {
-        if (err) throw err;
-        // saved!
-      });
+      onDataReceived(data)
 
       //socketIO.emit("new_logs_received", data);
       //socket.end();
@@ -44,12 +33,33 @@ users.forEach(user => {
 function dataToJSON(data) {
     let tempData = data.split(" ");
     tempData[1] = tempData[1].substr(0, 10) + " " + tempData[1].substr(11,8);
-    let data = {
+    let result = {
         'date':`${tempData[1]}`,
         'user_id': `${user.host}:${user.port}`,
         'sender_ip': `${tempData[2]}`,
         'file_name': `${tempData[3]}`,
         'message': `${tempData[7]}`
     };
-    return data;
+    return result;
+}
+
+
+function generateEntityFromData (data){
+    // return  dataToJSON(data);
+    return {
+        date: "2016-10-06 23:59:59",
+        user_id: `localhost:30000`,
+        sender_ip: '127.0.0.1',
+        file_name: 'admin.log',
+        message: 'Some body text'
+    };
+}
+
+function onDataSaved(err){
+    if (err) throw err;
+}
+
+function onDataReceived(data){
+     let record = new UserLogSchema(generateEntityFromData (data));
+     record.save(onDataSaved);
 }
