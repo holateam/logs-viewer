@@ -6,6 +6,7 @@ function queryDB(json){
     var col = UserLogSchema.find({}, function(err, res){
         if (err) return console.error(err);
         console.log(res);
+        return res;
     })
 }
 
