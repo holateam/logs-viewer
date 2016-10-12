@@ -23,12 +23,12 @@ users.forEach(user => {
 
       //socketIO.emit("new_logs_received", data);
       //socket.end();
-      console.log(data.toString());
     });
   });
 
   server.listen(user.port);
 });
+
 
 function dataToJSON(data) {
     let tempData = data.split(" ");
@@ -43,9 +43,9 @@ function dataToJSON(data) {
     return result;
 }
 
-
 function generateEntityFromData (data){
     // return  dataToJSON(data);
+    console.log("my Log: "+data);
     return {
         date: "2016-10-06 23:59:59",
         user_id: `localhost:30000`,
