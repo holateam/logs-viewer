@@ -1,8 +1,9 @@
 const PORT = 3000;
 
-let app = require("express")();
-let http = require("http").Server(app);
-let io = require("socket.io")(http);
+const app = require("express")();
+const http = require("http").Server(app);
+const io = require("socket.io")(http);
+const queryDB = require('./modules/queryDB');
 
 let connectedUsers = new Map();
 
@@ -25,6 +26,7 @@ io.on("connection", function (socket){
     let logsPortion;
 
     socket.on("send user data", function (data) {
+        let data = JSON.parse(data);
         userId = data.user_id;
         watchedIP = data.watched_ip;
         logsPortion = data.logs_portion;
@@ -33,8 +35,16 @@ io.on("connection", function (socket){
         maxId = 0;
         filterSearch = "";
         connectedUsers.set(userId, socket);
-        // request to BD for last logsPortion events
-        // socket.emit("send_logs", LOGS);
+        queryDB({
+            user_id: userId,
+            watched_ip: watchedIP,
+            logs_portion: logsPortion,
+            min_id: minId,
+            max_id: maxId,
+            filter_search: filterSearch
+        }).then(result => {
+            socket.emit("send logs", LOGS);
+        });
     });
 
     socket.on("get logs", function (data) {
