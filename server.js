@@ -25,7 +25,7 @@ io.on("connection", function (socket){
     let watchedIP;
     let logsPortion;
 
-    socket.on("send user data", function (data) {
+    socket.on("send user data", data => {
         let data = JSON.parse(data);
         userId = data.user_id;
         watchedIP = data.watched_ip;
@@ -43,7 +43,7 @@ io.on("connection", function (socket){
             max_id: maxId,
             filter_search: filterSearch
         }).then(result => {
-            socket.emit("send logs", LOGS);
+            socket.emit("send logs", result);
         });
     });
 
