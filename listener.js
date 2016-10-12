@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 const db = require('./modules/db');
-const bodyParser = require('body-parser');
 const UserLogSchema = require('./modules/userLog');
 
 let users = [{
-  "host": "localhost",
+  "host": "new.holateam.io",
   "port": "30000"
 }];
 
