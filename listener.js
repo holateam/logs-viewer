@@ -4,8 +4,8 @@ const UserLogSchema = require('./modules/userLog');
 const queryDB = require('./modules/queryDB');
 
 let users = [{
-  "host": "localhost",
-  "port": "30000"
+  host: "localhost",
+  port: 30000
 }];
 
 let tcp = require("net");
