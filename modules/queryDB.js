@@ -4,7 +4,7 @@ const UserLogSchema = require('./userLog');
 
 function queryDB(json){
     return new Promise(function(resolve, reject){
-        UserLogSchema.find({}, function(err, res){
+        UserLogSchema.find(json, function(err, res){
             if (err){
                 reject(err);
             }
