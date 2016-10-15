@@ -42,13 +42,13 @@ let Receiver = function (port) {
                     let fileName = `${logArr[2]}_${logArr[3]}`;
                     let currentBuffer = self.buffers[fileName];
 
-                    if (!currentBuffer) {
-                        currentBuffer = [];
+                    if (!self.buffers[fileName]) {
+                        self.buffers[fileName] = [];
                     }
-                    currentBuffer.push(log.toString());
-                    if (currentBuffer.length > 10) {
-                        self.writeBufferToFileAndClearThisBuffer(currentBuffer, fileName, function() {
-                            self.clearBuffer(currentBuffer);
+                    self.buffers[fileName].push(log.toString());
+                    if (self.buffers[fileName].length > 10) {
+                        self.writeBufferToFileAndClearThisBuffer(self.buffers[fileName], fileName, function() {
+                            self.clearBuffer(self.buffers[fileName]);
                         });
 
                     }
