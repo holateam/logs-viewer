@@ -3,7 +3,8 @@ let tcp = require('net');
 let Receiver = function (port) {
     return {
 
-        buffers: [],
+        buffers: {},
+        server: {},
 
         createServer: function () {
             return tcp.createServer();
@@ -15,10 +16,11 @@ let Receiver = function (port) {
         },
 
         hadleConnection: function () {
+            let self = this;
             this.server.on('connection', function (socket) {
                 socket.on('data', (data) => {
-                    console.log(data.toString());
-                })
+                    self.addFreshLogsToBuffer(data);
+                });
                 console.log('connection');
             });
         },
@@ -27,6 +29,25 @@ let Receiver = function (port) {
             this.server = this.createServer();
             this.listen(port);
             this.hadleConnection();
+        },
+
+        addFreshLogsToBuffer: function (newIncomingLogs) {
+            let self = this;
+            let logs = newIncomingLogs.toString().split('\n');
+            logs.forEach((log) => {
+
+                let logArr = log.split(' ');
+                let fileName = `${logArr[2]}_${logArr[3]}}`;
+
+                if (!self.buffers[fileName]) {
+                    self.buffer[fileName] = [];
+                }
+                self.buffer[fileName].push(log);
+            });
+        },
+
+        writeBufferToFile: function (buffer) {
+            
         }
     }
 };
