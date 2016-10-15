@@ -1,4 +1,5 @@
 let tcp = require('net');
+let fs = require('fs');
 
 let Receiver = function (port) {
     return {
@@ -37,20 +38,36 @@ let Receiver = function (port) {
             logs.forEach((log) => {
 
                 let logArr = log.split(' ');
-                let fileName = `${logArr[2]}_${logArr[3]}}`;
+                if (logArr.length > 1) {
+                    let fileName = `${logArr[2]}_${logArr[3]}`;
+                    let currentBuffer = self.buffers[fileName];
 
-                if (!self.buffers[fileName]) {
-                    self.buffer[fileName] = [];
+                    if (!currentBuffer) {
+                        currentBuffer = [];
+                    }
+                    currentBuffer.push(log.toString());
+                    if (currentBuffer.length > 10) {
+                        self.writeBufferToFileAndClearThisBuffer(currentBuffer, fileName, function() {
+                            self.clearBuffer(currentBuffer);
+                        });
+
+                    }
                 }
-                self.buffer[fileName].push(log);
             });
         },
 
-        writeBufferToFile: function (buffer) {
-            
+        writeBufferToFileAndClearThisBuffer: function (buffer, name, callback) {
+            for (let i = 0; i < buffer.length; i++) {
+                fs.writeFile(`./log files/${name}.txt`, buffer[i] + "\n");
+            }
+        },
+
+
+        clearBuffer: function (buffer) {
+            delete buffer;
         }
-    }
+    };
 };
 
-module.exports = Receiver;
+    module.exports = Receiver;
 
