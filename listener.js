@@ -17,10 +17,9 @@ function runServers(users) {
     users.forEach(user => {
         let server = tcp.createServer();
         let arrayBuff = {};
+
         server.on("connection", socket => {
-
             socket.on("data", (data) => {
-
                 saveInBuffer(data, arrayBuff);
 
                 // if(data.filename != buff.name)
@@ -48,10 +47,7 @@ function users() {
             }
             let array = [];
             res.forEach(user => {
-                // array.push({host: user.host, port: user.port});
                 array.push(user);
-                console.log(user.host);
-                console.log(user.port);
             });
             resolve(array);
         });
@@ -59,40 +55,38 @@ function users() {
     return promise;
 }
 
-function selectFileNameFromDataStream(data){
+function selectFileNameFromDataStream(data) {
     return data.toString().split(' ')[3];
 }
 
-function saveInBuffer(data, arrayBuff){
+function saveInBuffer(data, arrayBuff) {
     let limit = 10;
     let nameFile = selectFileNameFromDataStream(data);
     let baff = data.toString().split('\n');
 
-    if(!arrayBuff[nameFile]){
+    if (!arrayBuff[nameFile]) {
         arrayBuff[nameFile] = [];
     }
 
-    console.log('Пишем в буффер');
-    baff.forEach((line) =>{
-        if(arrayBuff[nameFile].length+1 >= limit){
+    baff.forEach((line) => {
+        if (arrayBuff[nameFile].length + 1 >= limit) {
             let buff = arrayBuff[nameFile];
             saveInFile(nameFile, buff, () => {
                 arrayBuff[nameFile].splice(0, 10);
             });
         }
-        if(line !=""){
+        if (line != "") {
             let time = new Date().toISOString();
             arrayBuff[nameFile].push(time + ' ' + parseToString(line));
-            console.log(`${arrayBuff[nameFile].length} ${line}`);
         }
     });
 }
 
-function parseToString(line){
+function parseToString(line) {
     let n = 0;
     for (let i = 0; i < line.length; i++) {
-        if(n != 2){
-            if(line[i] == ' '){
+        if (n != 2) {
+            if (line[i] == ' ') {
                 n++;
             }
         } else {
@@ -100,6 +94,6 @@ function parseToString(line){
             break;
         }
     }
-    return line.substring(n, line.length) ;
+    return line.substring(n, line.length);
 }
 

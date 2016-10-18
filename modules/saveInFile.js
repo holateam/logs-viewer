@@ -19,7 +19,6 @@ function saveInFile(namefile, buffer, callback) {
 function writeLog(wstream, buffer, callback) {
     buffer.forEach((line) => {
         let ok = wstream.write(`${line}\n`, 'utf8');
-        console.log(`Пишем строку: ${line}`);
         if (!ok) {
             wstream.once('drain', writeLog);
             //noinspection JSAnnotator
