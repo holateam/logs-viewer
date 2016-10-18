@@ -1,29 +1,105 @@
-const queryDB = require('./modules/queryDB');
-const logging = require('./modules/logging');
-
-let users = [{
-  host: "localhost",
-  port: 30000
-}];
+// const logging = require('./modules/logging');
+const Users = require('./modules/userSchema');
+const saveInFile = require('./modules/saveInFile');
 
 let tcp = require("net");
 let socketIO = require("socket.io-client")("http://localhost:3000");
 
-users.forEach(user => {
-  let server = tcp.createServer();
 
-  server.on("connection", socket => {
-    socket.on("data", (data) => {
-      // convert data to JSON
-
-      // write JSON to DB
-    //   onDataReceived(data, user);
-        logging.saveDataMongoDB(data, user);
-
-      //socketIO.emit("new_logs_received", data);
-      //socket.end();
-    });
-  });
-
-  server.listen(user.port);
+users().then(function (result) {
+    console.log(`Created TCP servers for each user...`);
+    runServers(result);
+}, function (err) {
+    console.log(`Error mongoDB ${err}`);
 });
+
+function runServers(users) {
+    users.forEach(user => {
+        let server = tcp.createServer();
+        let arrayBuff = {};
+        server.on("connection", socket => {
+
+            socket.on("data", (data) => {
+
+                saveInBuffer(data, arrayBuff);
+
+                // if(data.filename != buff.name)
+                // convert data to JSON
+
+                // write JSON to DB
+                //   onDataReceived(data, user);
+
+                //socketIO.emit("new_logs_received", data);
+                //socket.end();
+            });
+        });
+
+        server.listen(user.port, () => {
+            console.log(`Server running on PORT: ${user.port}`)
+        });
+    });
+}
+
+function users() {
+    let promise = new Promise(function (resolve, reject) {
+        Users.find({}, function (err, res) {
+            if (err) {
+                reject(err);
+            }
+            let array = [];
+            res.forEach(user => {
+                // array.push({host: user.host, port: user.port});
+                array.push(user);
+                console.log(user.host);
+                console.log(user.port);
+            });
+            resolve(array);
+        });
+    });
+    return promise;
+}
+
+function selectFileNameFromDataStream(data){
+    return data.toString().split(' ')[3];
+}
+
+function saveInBuffer(data, arrayBuff){
+    let limit = 10;
+    let nameFile = selectFileNameFromDataStream(data);
+    let baff = data.toString().split('\n');
+
+    if(!arrayBuff[nameFile]){
+        arrayBuff[nameFile] = [];
+    }
+
+    console.log('Пишем в буффер');
+    baff.forEach((line) =>{
+        if(arrayBuff[nameFile].length+1 >= limit){
+            let buff = arrayBuff[nameFile];
+            saveInFile(nameFile, buff, () => {
+                arrayBuff[nameFile].splice(0, 10);
+            });
+        }
+        if(line !=""){
+            let time = new Date().toISOString();
+            arrayBuff[nameFile].push(time + ' ' + parseToString(line));
+            console.log(`${arrayBuff[nameFile].length} ${line}`);
+        }
+    });
+}
+
+function parseToString(line){
+    let n = 0;
+    for (let i = 0; i < line.length; i++) {
+        if(n != 2){
+            if(line[i] == ' '){
+                n++;
+            }
+        } else {
+            n = i;
+            break;
+        }
+    }
+    return line.substring(n, line.length) ;
+}
+

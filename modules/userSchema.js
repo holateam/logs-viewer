@@ -1,14 +1,24 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
+const db = require('./db');
 
-var Schema = mongoose.Schema;
-var logSchema = new Schema({
-    date: Date,
-    user_id: String,
-    sender_ip: String,
-    file_name: String,
-    message: String
+const Schema = mongoose.Schema;
+let UserSchema = new Schema({
+    user: String,
+    email: String,
+    host: String,
+    port: Number,
+    streams: [
+        {
+            name: String,
+            fileslist: [{
+                namefile: String,
+                search: [{}]
+            }],
+
+        }
+    ]
 });
 
-var UserLogSchema = mongoose.model('UserLogSchema',logSchema);
+let Users = mongoose.model('users', UserSchema);
 
-module.exports = UserLogSchema;
+module.exports = Users;
