@@ -21,7 +21,6 @@ function runServers(users) {
         server.on("connection", socket => {
             socket.on("data", (data) => {
                 saveInBuffer(data, arrayBuff);
-
                 // if(data.filename != buff.name)
                 // convert data to JSON
 
@@ -59,25 +58,26 @@ function selectFileNameFromDataStream(data) {
     return data.toString().split(' ')[3];
 }
 
-function saveInBuffer(data, arrayBuff) {
+function saveInBuffer(data, arrayBuffer) {
     let limit = 10;
     let nameFile = selectFileNameFromDataStream(data);
-    let baff = data.toString().split('\n');
+    let buffer = data.toString().split('\n');
 
-    if (!arrayBuff[nameFile]) {
-        arrayBuff[nameFile] = [];
+    if (!arrayBuffer[nameFile]) {
+        arrayBuffer[nameFile] = [];
     }
 
-    baff.forEach((line) => {
-        if (arrayBuff[nameFile].length + 1 >= limit) {
-            let buff = arrayBuff[nameFile];
+    buffer.forEach((line) => {
+        if (arrayBuffer[nameFile].length + 1 >= limit) {
+            let buff = arrayBuffer[nameFile];
             saveInFile(nameFile, buff, () => {
-                arrayBuff[nameFile].splice(0, 10);
+                arrayBuffer[nameFile].splice(0, 10);
             });
         }
         if (line != "") {
             let time = new Date().toISOString();
-            arrayBuff[nameFile].push(time + ' ' + parseToString(line));
+            arrayBuffer[nameFile].push(time + ' ' + parseToString(line));
+            console.log(line);
         }
     });
 }
