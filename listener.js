@@ -1,15 +1,16 @@
 // const logging = require('./modules/logging');
-const Users = require('./modules/userSchema');
+// const Users = require('./modules/userSchema');
 const saveInFile = require('./modules/saveInFile');
+const db_query = require('./modules/db_query');
 
-let tcp = require("net");
-let socketIO = require("socket.io-client")("http://localhost:3000");
+const tcp = require("net");
+const socketIO = require("socket.io-client")("http://localhost:3000");
 
 
-users().then(function (result) {
+db_query.getUsers().then((result) => {
     console.log(`Created TCP servers for each user...`);
     runServers(result);
-}, function (err) {
+}, (err) => {
     console.log(`Error mongoDB ${err}`);
 });
 
@@ -17,10 +18,10 @@ function runServers(users) {
     users.forEach(user => {
         let server = tcp.createServer();
         let arrayBuff = {};
-
         server.on("connection", socket => {
             socket.on("data", (data) => {
-                saveInBuffer(data, arrayBuff);
+                console.log(`User Port? ${user.port} User Host? ${user.host}`);
+                saveInBuffer(data, arrayBuff, user.host, user.port);
                 // if(data.filename != buff.name)
                 // convert data to JSON
 
@@ -32,53 +33,39 @@ function runServers(users) {
             });
         });
 
-        server.listen(user.port, () => {
-            console.log(`Server running on PORT: ${user.port}`)
+        server.listen(user.port, user.host, () => {
+            console.log(`Server running on: ${user.host}:${user.port}`)
         });
     });
-}
-
-function users() {
-    let promise = new Promise(function (resolve, reject) {
-        Users.find({}, function (err, res) {
-            if (err) {
-                reject(err);
-            }
-            let array = [];
-            res.forEach(user => {
-                array.push(user);
-            });
-            resolve(array);
-        });
-    });
-    return promise;
 }
 
 function selectFileNameFromDataStream(data) {
     return data.toString().split(' ')[3];
 }
 
-function saveInBuffer(data, arrayBuffer) {
+function saveInBuffer(data, arrayBuffer, userHost, userPort) {
     let limit = 10;
     let nameFile = selectFileNameFromDataStream(data);
     let buffer = data.toString().split('\n');
-
     if (!arrayBuffer[nameFile]) {
         arrayBuffer[nameFile] = [];
     }
 
     buffer.forEach((line) => {
-        if (arrayBuffer[nameFile].length + 1 >= limit) {
-            let buff = arrayBuffer[nameFile];
-            saveInFile(nameFile, buff, () => {
-                arrayBuffer[nameFile].splice(0, 10);
-            });
-        }
         if (line != "") {
             let time = new Date().toISOString();
-            arrayBuffer[nameFile].push(time + ' ' + parseToString(line));
             console.log(line);
+            arrayBuffer[nameFile].push(time + ' ' + parseToString(line));
         }
+
+        if (arrayBuffer[nameFile].length + 1 >= limit) {
+            let buff = arrayBuffer[nameFile];
+            saveInFile(userHost + ":" + userPort, nameFile, buff, (address) => {
+                // db_query.saveAddressOfFile(userHost, userPort, nameFile, address);
+            });
+            arrayBuffer[nameFile].splice(0, limit);
+        }
+
     });
 }
 
