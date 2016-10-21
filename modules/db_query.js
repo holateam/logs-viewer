@@ -16,6 +16,22 @@ module.exports.getUsers = () => {
     return promise;
 };
 
+module.exports.getNameStreams = (userHost, userPort) => {
+    let promise = new Promise((resolve, reject) => {
+        User.findOne({host: userHost, port: userPort}, (err, res) => {
+            if (err) {
+                reject(err);
+            }
+            let array = [];
+            res.streams.forEach(obj => {
+                array.push(obj.name);
+            });
+            resolve(array);
+        });
+    });
+    return promise;
+};
+
 module.exports.saveAddressOfFile = (userHost, userPort, nameStream, addressFile) => {
     console.log("--->  save address file in db: " + addressFile);
     Users.findOne({host: userHost, port: userPort}, (err, doc) => {

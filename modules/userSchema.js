@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 let UserSchema = new Schema({
     user: String,
     email: String,
+    pass: String,
     host: String,
     port: Number,
     streams: [
