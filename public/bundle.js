@@ -21435,10 +21435,39 @@
 	    displayName: 'Main',
 
 
+	    setLiveUpdatingOnResume: function setLiveUpdatingOnResume() {
+	        this.setState({ isLiveUpdateRunning: true });
+	        socket.emit('resume live update');
+	    },
+
+	    setLiveUpdatingOnPause: function setLiveUpdatingOnPause() {
+	        this.setState({ isLiveUpdateRunning: false });
+	        socket.emit('pause live update');
+	    },
+
+	    setFilterExpression: function setFilterExpression(expr) {
+	        this.setState({ filterExpression: expr });
+	    },
+
+	    clearLogsFromViewer: function clearLogsFromViewer() {
+	        this.setState({ newLogs: [] });
+	    },
+
+	    getLogs: function getLogs() {
+	        socket.emit('get logs from server', this.state.filterExpression);
+	    },
+
 	    componentDidMount: function componentDidMount() {
 	        var self = this;
-	        socket.on('newest logs', function (msg) {
-	            self.handleLogsUpdate(msg, 'new');
+
+	        socket.on('live logs update', function (msg) {
+	            var m = JSON.parse(msg);
+	            self.handleLogsUpdate(m.events, 'new');
+	            self.setState({ isOldestEventReached: m.isOldestEventReached });
+	            if (self.state.isLiveUpdateRunning) {
+	                var logsWrapper = document.getElementById('logs_wrapper');
+	                logsWrapper.scrollTop = logsWrapper.scrollHeight;
+	            }
 	        });
 
 	        // var keepWrapperScrolledToBottom = function () {
@@ -21446,27 +21475,31 @@
 	        //     logsWrapper.scrollTop = logsWrapper.scrollHeight;
 	        // };
 
-	        socket.on('more logs', function (msg) {
-	            self.handleLogsUpdate(msg, 'old');
+	        socket.on('send logs from server to client', function (msg) {
+	            var m = JSON.parse(msg);
+	            self.handleLogsUpdate(m.events, 'old');
+	            self.setState({ isOldestEventReached: m.isOldestEventReached });
 	        });
 	    },
 
 	    getInitialState: function getInitialState() {
 	        return {
-	            newLogs: ['sdfgsdfgsdf', 'sdffffffffgdddddddddddddd'],
-	            oldLogs: ['gg', 'sdf']
+	            newLogs: [],
+	            filterExpression: '',
+	            isLiveUpdateRunning: true,
+	            isOldestEventReached: false
 	        };
 	    },
 
-	    handleLogsUpdate: function handleLogsUpdate(logs, oldOrNewParam) {
+	    handleLogsUpdate: function handleLogsUpdate(events, oldOrNewParam) {
 	        var l = [];
 	        if (oldOrNewParam === 'old') {
 	            l = this.state.newLogs;
-	            l.unshift(logs);
+	            l.unshift(events);
 	            this.setState({ newLogs: l });
 	        } else {
 	            l = this.state.newLogs;
-	            l.push(logs);
+	            l.push(events);
 	            this.setState({ newLogs: l });
 	        }
 	    },
@@ -21475,8 +21508,17 @@
 	        return React.createElement(
 	            'div',
 	            { id: 'container' },
-	            React.createElement(Viewer, { newLogs: this.state.newLogs }),
-	            React.createElement(Panel, null)
+	            React.createElement(Viewer, { newLogs: this.state.newLogs,
+	                setLiveUpdatingOnPause: this.setLiveUpdatingOnPause,
+	                setLiveUpdatingOnResume: this.setLiveUpdatingOnResume,
+	                getLogs: this.getLogs,
+	                isLiveUpdateRunning: this.isLiveUpdateRunning
+
+	            }),
+	            React.createElement(Panel, { setFilterExpression: this.setFilterExpression,
+	                clearLogsFromViewer: this.clearLogsFromViewer,
+	                liveStatus: this.state.isLiveUpdateRunning ? 'pause' : 'live update'
+	            })
 	        );
 	    }
 	});
@@ -21496,6 +21538,19 @@
 	    displayName: 'Viewer',
 
 
+	    handleScroll: function handleScroll() {
+	        var logsWrapper = document.getElementById("logs_wrapper");
+	        if (logsWrapper.scrollTop + logsWrapper.clientHeight == logsWrapper.scrollHeight) {
+	            this.props.setLiveUpdatingOnResume();
+	        } else {
+	            this.props.setLiveUpdatingOnPause();
+	        }if (logsWrapper.scrollTop <= 10) {
+	            var scrollPosition = logsWrapper.scrollHeight - logsWrapper.scrollTop;
+	            this.props.getLogs();
+	            logsWrapper.scrollTop = 20;
+	        }
+	    },
+
 	    renderNewChunks: function renderNewChunks() {
 	        var logs = this.props.newLogs;
 	        logs.map(function (chunk, index) {
@@ -21506,8 +21561,7 @@
 	    render: function render() {
 	        return React.createElement(
 	            'div',
-	            { id: 'logs_wrapper' },
-	            React.createElement('dl', { id: 'logs_history_list' }),
+	            { id: 'logs_wrapper', onScroll: this.handleScroll },
 	            React.createElement(
 	                'dl',
 	                { id: 'new_logs_list' },
@@ -21536,7 +21590,7 @@
 	        return React.createElement(
 	            'dd',
 	            null,
-	            this.props.text
+	            this.props.text.created_at
 	        );
 	    }
 	});
@@ -21554,32 +21608,29 @@
 	var Panel = React.createClass({
 	    displayName: 'Panel',
 
-	    pauseResumeUpdating: function pauseResumeUpdating(e) {
-	        if (e.target.checked) {
-	            socket.emit('pause_updating');
-	        } else {
-	            socket.emit('resume_updating');
-	        }
-	    },
 
-	    getMoreLogsButtonOnClick: function getMoreLogsButtonOnClick() {
-	        socket.emit('request for more old logs');
+	    handleSearchButtonClick: function handleSearchButtonClick(e) {
+	        e.preventDefault();
+	        var searchExpr = document.getElementById('search_input').value;
+	        this.props.clearLogsFromViewer();
+	        this.props.setFilterExpression(searchExpr);
+	        this.props.getLogs();
 	    },
 
 	    render: function render() {
 	        return React.createElement(
-	            'div',
-	            null,
+	            'form',
+	            { id: 'searchForm' },
 	            React.createElement(
 	                'button',
-	                { id: 'get_more_logs_btn', type: 'button', onClick: this.getMoreLogsButtonOnClick },
-	                'Get more logs'
+	                { id: 'search_btn', type: 'button', onClick: this.handleSearchButtonClick },
+	                'Search'
 	            ),
-	            React.createElement('input', { id: 'updating_checkbox', type: 'checkbox', onChange: this.pauseResumeUpdating }),
+	            React.createElement('input', { id: 'search_input', type: 'text', placeholder: 'Search' }),
 	            React.createElement(
-	                'span',
-	                null,
-	                'pause updating'
+	                'button',
+	                { id: 'live_status_btn', type: 'button', onClick: '' },
+	                this.props.liveStatus
 	            )
 	        );
 	    }

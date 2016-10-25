@@ -1,13 +1,34 @@
 #logs_wrapper {
     width: 100%;
     height: 600px;
-    background-color: #a9a4a4;
-    overflow: scroll;
+    background-color: #232323;
+    color: #c5c5c5;
+    overflow-y: scroll;
     word-break: break-all;
 }
 
 #container {
     max-height: 600px;
     position: relative;
+}
+
+#searchForm {
+    padding: 10px;
+    background-color: #0d439b;
+    display: inline-block;
+    width: 100%;
+    border-top: 2px solid white;
+}
+
+#search_input, #search_btn {
+    float: right;
+}
+
+#search_btn {
+    margin-right: 10px;
+}
+
+#search_input {
+    width: 25%;
 }
 

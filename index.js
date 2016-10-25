@@ -4,6 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 app.use(express.static(__dirname + '/public/'));
+app.number = 333;
 
 io.on('connection', function (socket) {
     var socketId = socket.id.toString();
@@ -16,25 +17,24 @@ io.on('connection', function (socket) {
 
     var isPaused = false;
     var msg = {};
-    msg.logText = "at /home/kr/web/hola/hola-study/papertrail/server-socket.js:6:13  at Layer.handle [as handle_request] (/home/kr/web/hola/hola-study/papertrail/node_modules/express/lib/router/layer.js:95:5)";
-    msg.oldLogs = 'Those an equal point no years do. Depend warmth fat but her but played. Shy and subjects wondered trifling pleasant. Prudent cordial comfort do no on colonel as assured chicken. Smart mrs day which begin. Snug do sold mr it if such. Terminated uncommonly at at estimating. Man behaviour met moonlight extremity acuteness direction. ';
+    msg.logText =  '{ "events": { "created_at" : "2016-10-06 23:59:59", "sender_ip":"127.0.0.1","file_name":"somefile.log", "message":"some logs..."}, "isOldestEventReached":false}';
+    msg.oldLogs = '{ "events": { "created_at" : "2016-10-06 23:59:59 oldldldl", "sender_ip":"127.0.0.1","file_name":"somefile.log", "message":"some logs..."}, "isOldestEventReached":false}';
 
     setInterval(function () {
         if (!isPaused) {
-            io.to(socketId).emit('newest logs', msg.logText);
+            io.to(socketId).emit('live logs update', msg.logText);
         }
     }, 1000);
 
-    socket.on('request for more old logs', function () {
-        io.to(socketId).emit('more logs', msg.oldLogs);
+    socket.on('get logs from server', function (filter) {
+        io.to(socketId).emit('send logs from server to client', msg.oldLogs);
     });
 
-    socket.on("pause_updating", function () {
-        console.log("pause_updating");
+    socket.on("pause live update", function () {
         isPaused = true;
     });
 
-    socket.on("resume_updating", function () {
+    socket.on("resume live update", function () {
         isPaused = false;
     });
 
