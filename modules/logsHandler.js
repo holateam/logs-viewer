@@ -23,7 +23,6 @@ module.exports = {
     },
 
     getTimestamp(log) {
-        let ipRegexp = 'ip'; // toDo
-        return log.substr(0, log.indexOf(ipRegexp));
+        return Date.parse(log.substr(0, log.indexOf('ip')).trim());
     }
 };
