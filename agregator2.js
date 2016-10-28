@@ -27,22 +27,21 @@ let createAgregator = (filters, streamIds, limit, heartbeatInterval, callback) =
         if(!minTimestamp || newMinTimestamp > minTimestamp){
             minTimestamp = newMinTimestamp;
 
-            let logsForSend = [];
-            buffers = buffers.map(cutByMinimalTimestamp);
+            let indexesOfNextAfterMinTimestamps = buffers.map( bufferOfOneFile => { return bufferOfOneFile.findIndex(nextAfterMinTimestamp) });
 
-            callback(logsForSend.sort(timestampComparator));
+            let logsForSend = buffers.map((bufferOfOneFile, bufferIndex) => {
+                let index = indexesOfNextAfterMinTimestamps[bufferIndex] !== -1 ? indexesOfNextAfterMinTimestamps[bufferIndex] : Number.MAX_VALUE;
+                return bufferOfOneFile.splice(0,index);
+            });
+
+            callback(logsForSend.join().sort(timestampComparator));
         }
     }
 
-    function cutByMinimalTimestamp(oneBuffer) {
-        return oneBuffer.filter(log => {
-            if(logToTimestamp(log) > minTimestamp){
-                return true;
-            }else {
-                logsForSend.push(log);
-                return false;
-            }
-        });
+    function nextAfterMinTimestamp(log) {
+        if(logToTimestamp(log) > minTimestamp){
+            return true;
+        }
     }
 
     function logToTimestamp(log) {
