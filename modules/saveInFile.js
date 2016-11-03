@@ -18,6 +18,7 @@ function saveInFile(userName, namefile, buffer, callback) {
                 }
                 else {
                     console.log(" ---> Directory created - OK");
+                    console.log('---> Buff' + buffer);
                     resolve();
                 }
             });
@@ -35,6 +36,7 @@ function saveInFile(userName, namefile, buffer, callback) {
 function createWStream(address) {
     let promise = new Promise((resolve) => {
         let wstream = fs.createWriteStream(address, {flags: 'w'});
+
         wstream.on('finish', () => {
             console.log(` ---> Write log in file: ${address}`);
         });

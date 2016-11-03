@@ -4,7 +4,7 @@ const saveInFile = require('./modules/saveInFile');
 const db_query = require('./modules/db_query');
 
 const tcp = require("net");
-const socketIO = require("socket.io-client")("http://localhost:3000");
+const socketIO = require("socket.io-client")("http://localhost:8080");
 
 
 db_query.getUsers().then((result) => {
@@ -44,7 +44,7 @@ function selectFileNameFromDataStream(data) {
 }
 
 function saveInBuffer(data, arrayBuffer, userHost, userPort) {
-    let limit = 10;
+    let limit = 5;
     let nameFile = selectFileNameFromDataStream(data);
     let buffer = data.toString().split('\n');
     if (!arrayBuffer[nameFile]) {
@@ -56,15 +56,19 @@ function saveInBuffer(data, arrayBuffer, userHost, userPort) {
             let time = new Date().toISOString();
             console.log(line);
             arrayBuffer[nameFile].push(time + ' ' + parseToString(line));
+
+            if (arrayBuffer[nameFile].length == limit) {
+                let buff = JSON.parse(JSON.stringify(arrayBuffer[nameFile]));
+                saveInFile(userHost + ":" + userPort, nameFile, buff, (address) => {
+                    // db_query.saveAddressOfFile(userHost, userPort, nameFile, address);
+                    // arrayBuffer[nameFile].splice(0, limit);
+                });
+                arrayBuffer[nameFile].splice(0, limit);
+                // console.log(`---> Buff: ${buff}`);
+            }
         }
 
-        if (arrayBuffer[nameFile].length + 1 >= limit) {
-            let buff = arrayBuffer[nameFile];
-            saveInFile(userHost + ":" + userPort, nameFile, buff, (address) => {
-                // db_query.saveAddressOfFile(userHost, userPort, nameFile, address);
-            });
-            arrayBuffer[nameFile].splice(0, limit);
-        }
+
 
     });
 }
