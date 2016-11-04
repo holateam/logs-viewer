@@ -1,16 +1,16 @@
 'use strict';
 
 
-const FileReader = require('./modules/fileReader.js');
+const fileReader = require('./modules/fileReader.js');
 const logsHandler = require('./modules/logsHandler.js');
 
 class Searcher {
-    constructor(heartbeatInterval, filePath, filter, limit, cb) {
+    constructor(heartbeatInterval, filePath, filter, limit, reverseDirection, cb) {
         this.heartbeatInterval = heartbeatInterval;
         this.filter = logsHandler.filtersToMap(filter); // ['-test', '.info']
         this.limit = limit;
         this.cb = cb;
-        this.fr = new FileReader(filePath);
+        this.fr = fileReader(filePath, reverseDirection);
         this.relevantLogs = [];
         this.timeouts = [];
         this.fileEnd = false;
