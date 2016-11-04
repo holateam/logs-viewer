@@ -1,16 +1,16 @@
 'use strict';
 
-let ReverseReader = require('./reverseReader.js');
+let FileLineReader = require('./fileLineReader.js');
 
 class FileReader {
 
-    constructor(filePath) {
-        this.rr = new ReverseReader(filePath);
+    constructor(filePath, direction, chankSize, separator, encoding) {
+        this.flr = new FileLineReader(filePath, direction, chankSize, separator, encoding);
     }
 
     readLine() {
         return new Promise((resolve)=> {
-            this.rr.readLine((line, last)=> {
+            this.flr.readLine((line, last)=> {
                 resolve({msg: line, last: last});
             });
         })
