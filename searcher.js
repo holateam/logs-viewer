@@ -15,9 +15,33 @@ class Searcher {
         this.timeouts = [];
         this.fileEnd = false;
         this.finalTimestamp = 0;
+        this.pauseSearch = true;
+    }
+
+    start () {
         this.pauseSearch = false;
         this.search();
         this.periodicallySearcherInfo();
+    }
+
+
+    startFromRelevantLine (relevantLine) {
+        return this.fr.readLine()
+            .then((currentLine)=> {
+                if (currentLine.last) {
+                    this.fileEnd = true;
+                    this.finalTimestamp = logsHandler.getTimestamp(currentLine.msg);
+                    this.transmitLogPortion();
+                } else if (currentLine.msg != relevantLine) {
+                    this.startFromRelevantLine(relevantLine);
+                } else {
+                    this.start();
+                }
+
+            })
+            .catch((err)=> {
+                console.log('err: ', err);
+            });
     }
 
 
@@ -65,12 +89,12 @@ class Searcher {
         console.log('stop')
     }
 
-    resume () {
+    /*resume () {
         this.pauseSearch = false;
         this.search();
         this.periodicallySearcherInfo();
         console.log('resume');
-    }
+    }*/
 
     periodicallySearcherInfo () {
         let _this = this;
