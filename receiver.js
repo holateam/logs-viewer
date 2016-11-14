@@ -44,7 +44,7 @@ function selectFileNameFromDataStream(data) {
 }
 
 function saveInBuffer(data, arrayBuffer, userHost, userPort) {
-    let limit = 5;
+    let limit = 50;
     let nameFile = selectFileNameFromDataStream(data);
     let buffer = data.toString().split('\n');
     if (!arrayBuffer[nameFile]) {

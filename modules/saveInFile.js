@@ -68,7 +68,7 @@ function writeLog(wstream, buffer) {
 
 function generatedDirectoryAndFileName(userName) {
     return config.dirname + userName + '/' + new Date().getFullYear() + '/'
-        + new Date().getMonth() + '/' + new Date().getDay()
+        + (new Date().getMonth()+ 1) + '/' + new Date().getDate()
         + '/';
 }
 

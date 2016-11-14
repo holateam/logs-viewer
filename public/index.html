@@ -1,24 +1,101 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>See your logs</title>
-    <link rel="stylesheet" href="./css/style.css">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="libs/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <!--<script src="../node_modules/socket.io-client/socket.io.js"></script>-->
+
 </head>
 <body>
-<div>
-    <div id="container">
-        <div id="logs_wrapper">
-            <dl id="logs_history_list"></dl>
-            <dl id="new_logs_list"></dl>
+
+<div class="container">
+    <div class="row">
+        <h1 class="text-center">Logs-viewer</h1>
+        <div class="wrap-dashboard ashboardcol-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div id="dashboard">
+                <ul id="event_list" class="list-unstyled text-left">
+
+                </ul>
+            </div>
+        </div>
+        <div class="wrap-dashboard-nav col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="form-group">
+                    <input type="text" id="filter" class="form-control" placeholder="Search">
+                </div>
+
         </div>
     </div>
-    <button id="get_more_logs_btn" type="button">Get more logs</button>
-    <input id="updating_checkbox" type="checkbox">stop updating
 </div>
-<script type="text/javascript" src="./js/jquery-3.1.1.min.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script type="text/javascript" src="./js/common.js" defer></script>
 
+
+<script src="libs/jquery/dist/jquery.min.js"></script>
+<script src="libs/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="js/common.js"></script>
+<script>
+    var user = {
+        host: 'localhost',
+        port: '30000',
+        streamsId: ['log', 'sys_log', 'nginx'],
+        filter: '',
+        reverseDirection: true
+    };
+    var socket= io.connect('');
+//    socket.emit('get logs', user);
+
+    socket.on('get logs', function (data){
+        console.log(data.data.toString());
+        data.logs.forEach(function (li) {
+            $("<li>"+li+"</li>").appendTo('ul');
+        });
+//        $("<li>"+JSON.stringify(data.logs)+"</li>").appendTo('ul');
+    });
+
+//    $('#dashboard').scroll(function(){
+//        alert('Элемент foo был прокручен... скроллирован... ну как там это называется то?!');
+//    });
+
+    $('#dashboard').scroll( function(){
+        var $this = $(this);
+        var scrollTop = $this.scrollTop();
+        var height = $this.height();
+        var scrollHeight = $this[0].scrollHeight;
+
+        console.log($this.scrollTop());
+
+        if( scrollTop == 1 ){
+            console.log('top found');
+            user.reverseDirection = true;
+//            socket.emit('get logs old', user);
+        }
+        if(scrollTop + height == scrollHeight){
+            console.log('bottom found');
+            user.reverseDirection = false;
+//            socket.emit('get logs new', user);
+        }
+    });
+
+    $('#filter').keyup(function (event) {
+       var keyCode = event.keyCode;
+        if(keyCode === 13){
+            var filter = $('#filter').val();
+            console.log(filter);
+            user.filter = filter;
+            socket.emit('get logs', user);
+        }
+    });
+
+
+    //    socket.on('news', function (data){
+    //        console.log(data);
+    //        socket.emit('my other event', {my: "data"})
+    //    });
+
+</script>
 </body>
 </html>

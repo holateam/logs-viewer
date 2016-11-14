@@ -1,117 +1,78 @@
-/**
- * Created by lex on 26.10.16.
- */
 const LogSearcher = require('./logSearcher');
 const searchInBuffer = require('./searchInBuffer');
 
-let obj = {
-    filters: '',
-    streamsId: ['log', 'sys_log', 'nginx'],
-    miniTimestamp: 1,
-    limit: 2,
-    heartbeatInterval: 2000,
-    isNew: true,
-    callback: (logs) => {
-        console.log('Finish my searchers logs:'+ logs.toString());
-    }
-};
+let firstTimestamp = new Date(); // first Timestamp
+let lastTimestamp = new Date(); // last Timestamp
+let pointTimestamp = '';
+let limit = 40; // ??
+let heartbeatInterval = 1000; // ??
+let logSearchers = null;
 
-let miniTimestamp = '';
-let maxTimestamp = '';
+let createAggregator = (userId, streamsId, filters, reverseDirection, callback) => {
+    let count = 0; // ?
+    let buffers = {}; // buffer logs?
+    limit = 20;
+    pointTimestamp = (reverseDirection) ? lastTimestamp : firstTimestamp;
 
-
-
-
-let createAggregator = (userId, streamsId, filters, limit, heartbeatInterval, isNew, callback) => {
-    let count = 0;
-    let buffers = {};
-    let lastTimestamp = (isNew) ? maxTimestamp : miniTimestamp;
-
-    function createLogSearcher (userId, streamId, filters, limit, heartbeatInterval, lastTimestamp, isNew, callback) {
-
-        return new LogSearcher(userId, streamId, filters, limit, heartbeatInterval, lastTimestamp, isNew, callback);
-
-        // let logs = [];
-        // let lastTimestamp = 0;
-        // let finish = false;
-        // if(streamId == "log"){
-        //     logs = [22,21,20,19,18,15,16,14,13,12];
-        //     lastTimestamp = 12;
-        // } else if(streamId == "sys_log") {
-        //     logs = [17,15,11,9,5];
-        //     lastTimestamp = 5;
-        // } else {
-        //     logs = [20,16,15,9,2,1];
-        //     lastTimestamp = 1;
-        // }
-        // callback(streamId, logs, lastTimestamp, finish);
-        //
-        // // searchInFile()
-
-    }
-
-    function aggregateLogs(streamId, logs, lastTimestamp, finish){
-        // if(finish){
-        //     logSearchers[streamId].stop();
-        // }
-        console.log(`aggregatorsLogs -> streamId: ${streamId}`);
-        console.log(`aggregatorsLogs -> logs: ${logs}`);
-        if (!buffers[streamId]) {
-            buffers[streamId] = [];
-        }
-        buffers[streamId].push(...logs);
-        console.log('bufers[streamId]: ' + JSON.stringify(buffers[streamId]));
-        srez(buffers);
-    }
-
-
-    let logSearchers = streamsId.map((streamId) => {
-        return createLogSearcher (userId, streamId, filters, limit, heartbeatInterval, lastTimestamp, isNew, aggregateLogs);
+    logSearchers = streamsId.map((streamId) => {
+        return createLogSearcher(userId, streamId, filters, limit, reverseDirection, aggregateLogs);
     });
 
-    console.log("LogSerchers--> "+ logSearchers);
+    function createLogSearcher(userId, streamId, filters, limit, reverseDirection, callback) {
+        return new LogSearcher(userId, streamId, filters, limit, heartbeatInterval, pointTimestamp, reverseDirection, callback);
+    }
+
+    function aggregateLogs(streamId, logs, pointTimestamp, finish) {
+        console.log(`aggregatorsLogs -> streamId: ${streamId}`);
+        // console.log(`aggregatorsLogs -> logs: ${logs}`);
+        limit -= 5;
+        console.log("Limit: " + limit);
+        if (limit > 0) {
+            console.log("Finish search");
+            logSearchers.forEach((searcher) => {
+                if (searcher.streamId == streamId) {
+                    searcher.resume();
+                }
+            });
+        }
+
+        console.log('buff' + JSON.stringify(logs));
+        callback(logs);
+        // callback(logs.split('\n'));
+        // if (!buffers[streamId]) {
+        //     buffers[streamId] = [];
+        // }
+        // buffers[streamId].push(...logs);
+        // console.log('bufers[streamId]: ' + JSON.stringify(buffers[streamId]));
+        // srez(buffers);
+    }
 
     function srez(buffers) {
         count++;
-        if(count >= 3){
+        if (count >= 3) {
 
             let filteredLogs = [];
             let srezTimestamp = getTimestampOfToSrez(buffers);
 
-            for(i in buffers){
+            for (i in buffers) {
                 let count = 0;
                 buffers[i].forEach(line => {
-                    if( srezTimestamp <= Date.parse(line.split(" ", 1)) ){
+                    if (srezTimestamp <= Date.parse(line.split(" ", 1))) {
                         filteredLogs.push(line);
                         count++;
                     }
                 });
                 buffers[i].splice(0, count);
             }
-
-            // console.log(JSON.stringify(cutByMinimalTimestamp(buffers[i])));
-            // filteredLogs.push(...cutByMinimalTimestamp(buffers[i]));
-
             callback(filteredLogs);
-            // setTimeout(function(){
-            //     callback(["sdkfjsk","dfdf"])
-            // }, 2000);
         }
-    }
-
-    function cutByMinimalTimestamp(buffer) {
-        // Todo something in the buffer
-        // console.log("sdsdsd: "+ JSON.stringify(array));
-        return buffer.filter(log => {
-            return log <= 20;
-        });
     }
 
     function getTimestampOfToSrez(buffers) {
         let srezTimestamp = 0;
-        for(i in buffers) {
-            let digitalTimestampValue = Date.parse(buffers[i][buffers[i].length-1].split(" ", 1));
-            if(srezTimestamp < digitalTimestampValue){
+        for (i in buffers) {
+            let digitalTimestampValue = Date.parse(buffers[i][buffers[i].length - 1].split(" ", 1));
+            if (srezTimestamp < digitalTimestampValue) {
                 srezTimestamp = digitalTimestampValue;
             }
         }
@@ -128,14 +89,16 @@ let createAggregator = (userId, streamsId, filters, limit, heartbeatInterval, is
             logSearchers.forEach((searcher) => {
                 searcher.stop();
             });
+        },
+        resume: (options) => {
+            logSearchers.forEach((searcher) => {
+                searcher.resume();
+            });
         }
     }
 
 };
 
 module.exports.createAggregator = createAggregator;
-
-// createAggregator(obj.filters, obj.streamsId, obj.miniTimestamp,
-//     obj.limit, obj.heartbeatInterval, obj.callback).start();
 
 

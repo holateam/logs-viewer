@@ -6,39 +6,72 @@ let aggregator = require('./modules/aggregator');
 // const bodyParser = require('body-parser');
 
 
-
 app.get("/", (req, res) => {
-    app.use(express.static(__dirname + "/public2/"));
-    res.sendFile(__dirname + "/public2/index.html");
+    app.use(express.static(__dirname + "/public/"));
+    res.sendFile(__dirname + "/public/index.html");
 });
 
-io.sockets.on('connection', (socket) =>{
-   socket.on('get logs', (data) => {
-       console.log('get logs: '+ JSON.stringify(data));
-       // Todo get user options in DB -> query data.port, data.host, data.streamsId,
-       let obj = {
-           filters: data.filter,
-           streamsId: ['log', 'sys_log', 'nginx'],
-           miniTimestamp: 1,
-           limit: 2,
-           heartbeatInterval: 2000,
-           userId: "localhost:30000",
-       };
-       let callback = (logs) => {
-           socket.emit('get logs',{
-               data: 'new logs on localhost:8080',
-               logs: logs
-           });
-       };
-       aggregator.createAggregator(obj.userId,  obj.streamsId, obj.filters,
-           obj.limit, obj.heartbeatInterval, true, callback).start();
+io.sockets.on('connection', (socket) => {
+    let obj = {
+        filters: [],
+        streamsId: ['log', 'sys_log', 'nginx'],
+        limit: 20,
+        heartbeatInterval: 2000,
+        userId: 'localhost' + '30000',
+        reverseDirection: true, // false = the direction of the reader from old to new, true = from new to old
+    };
+    let myAggregator = null;
 
-   });
+    socket.emit('get logs', {
+        data: 'new logs on localhost:8080',
+        logs: ['Connection on server logers']
+    });
 
-   // socket.emit('get logs', {hello: 'world'});
-   // socket.on('my other event', (data) => {
-   //      console.log(data);
-   //  });
+    let callback = (logs) => {
+        socket.emit('get logs', {
+            data: 'new logs on localhost:8080',
+            logs: logs
+        });
+    };
+
+    myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
+        obj.reverseDirection, callback);
+    myAggregator.start();
+
+    socket.on('get logs', (data) => {
+        // Todo get user options in DB -> query data.port, data.host, data.streamsId,
+        obj.filters.push(data.filter);
+        obj.streamsId = data.streamsId;
+
+        myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
+            data.reverseDirection, callback);
+        myAggregator.start();
+    });
+
+    socket.on('get logs old', (data) => {
+        console.log("socket.on('get logs old')");
+        if (obj.reverseDirection == true) {
+            myAggregator.resume();
+        } else {
+            obj.reverseDirection = true;
+            myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
+                data.reverseDirection, callback);
+            myAggregator.start();
+        }
+    });
+
+    socket.on('get logs new', (data) => {
+        console.log("socket.on('get logs new')");
+        if (obj.reverseDirection == false) {
+            myAggregator.resume();
+        } else {
+            obj.reverseDirection = false;
+            myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
+                data.reverseDirection, callback);
+            myAggregator.start();
+        }
+    });
+
 });
 
 server.listen(3000, () => {

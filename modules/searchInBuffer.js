@@ -1,7 +1,3 @@
-/**
- * Created by lex on 27.10.16.
- */
-
 let buffer = [
     "2016-10-26T14:27:36.335Z bel log - - - --- ya.ru ping statistics ---",
     "2016-10-26T14:27:36.335Z bel log - - - --- ya.ru ping statistics ---",
@@ -17,61 +13,16 @@ let buffer = [
 
 let finish = false;
 
-function searchInBuffer (limit, heartbeatInterval, filters, streamId, lastTimestamp, callback) {
+function searchInBuffer (limit, heartbeatInterval, filters, streamId, pointTimestamp, callback) {
     console.log("filter ------->: " + filters);
 
-
-    // if(!finish){
-        // let lastTimestamp = '';
-        let logs = buffer.filter((str) => {
-            lastTimestamp = str.split(" ")[0];
-            return str.indexOf(filters) != -1
+        let logs = buffer.map(str => {
+            pointTimestamp = str.split(" ")[0];
+            return (str.indexOf(filters) != -1) ? str :  pointTimestamp;
         });
         console.log("my buffer --------> " + JSON.stringify(logs));
-        // finish = true;
-    callback(streamId, logs, lastTimestamp, finish);
-    //     let setIntId = setInterval( ()=>{
-    //         callback(streamId, logs, lastTimestamp, finish)
-    //     }, 1000);
-    // }else {
-    //     clearInterval(setIntId);
-    // }
+    callback(streamId, logs, pointTimestamp, finish);
 
 }
-
-// function logSearcher (streamId,filters,limit,heartbeatInterval,callback) {
-//     this.streamId = streamId;
-//     this.filters = filters;
-//     this.limit = limit;
-//     this.heartbeatInterval = heartbeatInterval;
-//     this.callback = callback;
-//     this.start = () => {
-//         searchInBuffer(limit, heartbeatInterval,filters,callback);
-//     };
-// }
-
-
-// let serch = new logSearcher('log', 'ya.ru', 2, 100, function (logs) {
-//     console.log((logs.forEach(line =>{
-//         console.log(line);
-//     })));
-// });
-
-
-// console.log(JSON.stringify(serch));
-// serch.start();
-
-
-// searchInBuffer(10, 1000, "min/avg/max/mdrrev", "log", "2016-10-26T14:27:36.335Z", (streamId, logs, lastTimestamp) => {
-//     console.log("my buffer --------> " + JSON.stringify(logs));
-//     let llogs = logs;
-//     // logs.forEach(line =>{
-//     //     console.log(line);
-//     // });
-//
-//     llogs.forEach((line) => {
-//        line = "5465w45rew465r4w5r4w65";
-//     });
-// });
 
 module.exports = searchInBuffer;
