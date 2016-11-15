@@ -16,6 +16,17 @@ module.exports.getUsers = () => {
     return promise;
 };
 
+module.exports.signIn = (obj) => {
+  let promise = new Promise((resolve, reject) => {
+      Users.findOne({email: obj.email, password: obj.password}, (err, user) => {
+          if(err) reject(err);
+          // if(!err) resolve(false);
+          resolve(user);
+      });   
+  });
+    return promise;
+};
+
 module.exports.getNameStreams = (userHost, userPort) => {
     let promise = new Promise((resolve, reject) => {
         User.findOne({host: userHost, port: userPort}, (err, res) => {
@@ -40,6 +51,8 @@ module.exports.saveAddressOfFile = (userHost, userPort, nameStream, addressFile)
                 stream.fileslist.push({namefile: addressFile});
             }
         });
-        doc.save();
+        doc.save((err) => {
+            if(err) console.log(err);
+        });
     });
 };
