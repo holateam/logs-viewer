@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io').listen(server);
+const db_query = require('./modules/db_query');
 let aggregator = require('./modules/aggregator');
 // const bodyParser = require('body-parser');
 
@@ -34,9 +35,19 @@ io.sockets.on('connection', (socket) => {
         });
     };
 
-    myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
-        obj.reverseDirection, callback);
-    myAggregator.start();
+    // myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
+    //     obj.reverseDirection, callback);
+    // myAggregator.start();
+
+    socket.on('sign in', (data) => {
+
+        db_query.signIn(data).then((result) => {
+            console.log(result);
+            socket.emit('sing in', result);
+        }, (err) => {
+            console.log(`Error mongoDB ${err}`);
+        });
+    });
 
     socket.on('get logs', (data) => {
         // Todo get user options in DB -> query data.port, data.host, data.streamsId,
