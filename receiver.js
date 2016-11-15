@@ -60,16 +60,13 @@ function saveInBuffer(data, arrayBuffer, userHost, userPort) {
             if (arrayBuffer[nameFile].length == limit) {
                 let buff = JSON.parse(JSON.stringify(arrayBuffer[nameFile]));
                 saveInFile(userHost + ":" + userPort, nameFile, buff, (address) => {
-                    // db_query.saveAddressOfFile(userHost, userPort, nameFile, address);
+                    db_query.saveAddressOfFile(userHost, userPort, nameFile, address);
                     // arrayBuffer[nameFile].splice(0, limit);
                 });
                 arrayBuffer[nameFile].splice(0, limit);
                 // console.log(`---> Buff: ${buff}`);
             }
         }
-
-
-
     });
 }
 
