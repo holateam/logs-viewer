@@ -1,16 +1,24 @@
 const lineReader = require('reverse-line-reader');
+const fs = require('fs');
 const config = require('../config.json');
+
 
 let fileInReadReverse = function (limit, heartbeatInterval, filters, streamId, pointTimestamp,
                            reverseDirection, filename, pauseSearch, callback) {
-
-    // this.rstream = new fs.ReadStream(filename, {encoding: "utf8"});
+    this.filename = "/home/lex/myProject/logs-viewer/logs/localhost:30000/tolstoi_l_n__voina_i_mir.txt";
+    this.point = 0;
+    this.chunk = 1024;
+    this.buff = [];
     this.start = () => {
-        let count = 0;
-        let chunk = 5;
-        let buff = [];
-        callback("log", ["dkdfskdjfksdfjksdfjksdjfksdjfksjfskjfkljf"]);
-
+        this.point = 0;
+        this.buff = [];
+        let rstream = new fs.ReadStream(this.filename, {start: this.point, end: this.chunk, encoding: "utf8"});
+        rstream.on("data", (data) => {
+            this.point += this.chunk;
+            console.log("--> " + data + " <--");
+            this.buff.push(data.split("\n"));
+            callback(streamId, this.buff);
+        });
 
         // this.rstream.on('data', (chunk) => {
         //     setTimeout(() => {
@@ -19,17 +27,24 @@ let fileInReadReverse = function (limit, heartbeatInterval, filters, streamId, p
         //     this.rstream.pause();
         // });
         //
-        // this.rstream.on('error', (err) => {
-        //     console.error(err.message);
-        // });
-        // this.rstream.on('end', () => {
-        //     console.log('--> rstream finish read file');
-        // });
+        rstream.on('error', (err) => {
+            console.error(err.message);
+        });
+        rstream.on('end', () => {
+            console.log('--> rstream finish read file');
+        });
     };
 
-
     this.resume = () => {
-        callback("log", ["resume ddkgjkdgjdlkgj"]);
+        console.log("resume start= "+ this.point + " end= " + (this.chunk+this.point) );
+
+        let rstream = new fs.ReadStream(this.filename, {start: this.point, end: this.chunk+this.point, encoding: "utf8"});
+        rstream.on("data", (data) => {
+            this.point += this.chunk;
+            console.log("--> " + data + " <--");
+            this.buff.push(data.split("\n"));
+            callback(streamId, this.buff);
+        });
         // this.rstream.resume();
         // console.log(JSON.stringify(this.cb));
         // this.cb();
