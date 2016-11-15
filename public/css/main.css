@@ -2,6 +2,13 @@ body {
     background-color: #202020;
     color: white;
 }
+.top-wrapper{
+    margin-top: 10px;
+    padding: 15px 0;
+}
+.signIn{
+    float: right;
+}
 
 #dashboard {
     max-height: 400px; /* высота нашего блока */
