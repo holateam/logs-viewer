@@ -22,7 +22,7 @@ module.exports.signIn = (obj) => {
           if(err) reject(err);
           // if(!err) resolve(false);
           resolve(user);
-      });   
+      });
   });
     return promise;
 };
