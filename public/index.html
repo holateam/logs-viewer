@@ -18,125 +18,99 @@
         <div class="row">
             <div class="logo col-lg-4 col-md-4 col-sm-4"></div>
             <div class="links col-lg-8 col-md-8 col-sm-8">
-                <div class="signIn">
-                    <form class="form-inline">
-                        <div class="form-group">
-                            <label class="sr-only" for="email">Email address</label>
-                            <input type="email" class="form-control" id="email" placeholder="Email">
-                        </div>
-                        <div class="form-group">
-                            <label class="sr-only" for="password">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Password">
-                        </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox"> Remember me
-                            </label>
-                        </div>
-                        <button id="signIn" type="submit" class="btn btn-default">Sign in</button>
-                    </form>
+                <a id="signIn" class="btn btn-default" href="/login" role="button">Sign In</a>
+                <a id="signUp" class="btn btn-warning" href="/register" role="button">Sign Up</a>
+            </div>
+        </div>
+        <div class="row">
+            <h1 class="text-center">Logs-viewer</h1>
+            <div class="wrap-dashboard col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div id="dashboard">
+                    <ul id="event_list" class="list-unstyled text-left">
+                    </ul>
                 </div>
             </div>
-        </div>
-    </div>
-
-</div>
-<div class="container">
-    <div class="row">
-        <h1 class="text-center">Logs-viewer</h1>
-        <div class="wrap-dashboard ashboardcol-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <div id="dashboard">
-                <ul id="event_list" class="list-unstyled text-left">
-
-                </ul>
-            </div>
-        </div>
-        <div class="wrap-dashboard-nav col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="wrap-dashboard-nav col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="form-group">
                     <input type="text" id="filter" class="form-control" placeholder="Search">
                 </div>
-
+            </div>
         </div>
-    </div>
-</div>
 
 
-<script src="libs/jquery/dist/jquery.min.js"></script>
-<script src="libs/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="js/common.js"></script>
-<script>
-    var user = {
-        name: "Alex",
-        host: 'localhost',
-        port: '30000',
-        streamsId: ['log', 'sys_log', 'nginx'],
-        filter: '',
-        reverseDirection: true
-    };
-    var socket= io.connect('');
-//    socket.emit('get logs', user);
+        <script src="libs/jquery/dist/jquery.min.js"></script>
+        <script src="libs/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="js/common.js"></script>
+        <script>
+            var user = {};
+            var socket = io.connect('');
 
-    socket.on('sign in', function (data) {
-        user.name = data.name;
-        user.host = data.host;
-        user.port = data.port;
-        user.streamsId = user.streamsId;
-    });
+            if (document.cookie){
+                socket.emit('cookie-session', document.cookie);
+            }
 
-    socket.on('get logs', function (data){
-        console.log(data.data.toString());
-        data.logs.forEach(function (li) {
-            $("<li>"+li+"</li>").appendTo('ul');
-        });
+            socket.on('cookie-session', function (obj) {
+                console.log(obj);
+                user = obj;
+                user.reverseDirection = true;
+                user.filters= "";
+                socket.emit('get logs old', user);
+            });
+
+            socket.on('sign in', function (data) {
+                user.name = data.name;
+                user.host = data.host;
+                user.port = data.port;
+                user.streamsId = user.streamsId;
+            });
+
+            socket.on('get logs', function (data) {
+                console.log(data.data.toString());
+                data.logs.forEach(function (li) {
+                    $("<li>" + li + "</li>").appendTo('ul');
+                });
 //        $("<li>"+JSON.stringify(data.logs)+"</li>").appendTo('ul');
-    });
+            });
 
-//    $('#dashboard').scroll(function(){
-//        alert('Элемент foo был прокручен... скроллирован... ну как там это называется то?!');
-//    });
+            //    $('#dashboard').scroll(function(){
+            //        alert('Элемент foo был прокручен... скроллирован... ну как там это называется то?!');
+            //    });
 
-    $('#dashboard').scroll( function(){
-        var $this = $(this);
-        var scrollTop = $this.scrollTop();
-        var height = $this.height();
-        var scrollHeight = $this[0].scrollHeight;
+            $('#dashboard').scroll(function () {
+                var $this = $(this);
+                var scrollTop = $this.scrollTop();
+                var height = $this.height();
+                var scrollHeight = $this[0].scrollHeight;
 
-        console.log($this.scrollTop());
+                console.log($this.scrollTop());
 
-        if( scrollTop == 1 ){
-            console.log('top found');
-            user.reverseDirection = true;
+                if (scrollTop == 1) {
+                    console.log('top found');
+                    user.reverseDirection = true;
 //            socket.emit('get logs old', user);
-        }
-        if(scrollTop + height == scrollHeight){
-            console.log('bottom found');
-            user.reverseDirection = false;
+                }
+                if (scrollTop + height == scrollHeight) {
+                    console.log('bottom found');
+                    user.reverseDirection = false;
 //            socket.emit('get logs new', user);
-        }
-    });
+                }
+            });
 
-    $('#signIn').click(function (event) {
-        var email = $('#email').val();
-        var password = $('#password').val();
-       socket.emit('sign in', {email: email, password: password});
-    });
+            $('#filter').keyup(function (event) {
+                var keyCode = event.keyCode;
+                if (keyCode === 13) {
+                    var filter = $('#filter').val();
+                    console.log(filter);
+                    user.filter = filter;
+                    socket.emit('get logs', user);
+                }
+            });
 
-    $('#filter').keyup(function (event) {
-       var keyCode = event.keyCode;
-        if(keyCode === 13){
-            var filter = $('#filter').val();
-            console.log(filter);
-            user.filter = filter;
-            socket.emit('get logs', user);
-        }
-    });
+            //    socket.on('news', function (data){
+            //        console.log(data);
+            //        socket.emit('my other event', {my: "data"})
+            //    });
 
-
-    //    socket.on('news', function (data){
-    //        console.log(data);
-    //        socket.emit('my other event', {my: "data"})
-    //    });
-
-</script>
+        </script>
 </body>
 </html>

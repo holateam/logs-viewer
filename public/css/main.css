@@ -2,14 +2,26 @@ body {
     background-color: #202020;
     color: white;
 }
+.msgErr{
+    visibility: hidden;
+    color: #ff5e26;
+}
 .top-wrapper{
     margin-top: 10px;
     padding: 15px 0;
 }
-.signIn{
-    float: right;
+.signIn, .signUp{
+    margin-top: 20px;
+    padding: 30px 20px;
+    background-color: #75507B;
+    border: 1px solid #202020;
 }
-
+.form-center {
+    text-align: center;
+}
+.links{
+    text-align: right;
+}
 #dashboard {
     max-height: 400px; /* высота нашего блока */
     /*width: 200px; !* ширина нашего блока *!*/
