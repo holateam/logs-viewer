@@ -3,7 +3,9 @@
     "mongoose": {
         "urli": "mongodb://alex:root@ds053186.mlab.com:53186/hola"
     },
-    "session": {},
+    "session": {
+        "timeMinutes": 5
+    },
     "dirname": "/home/lex/myProject/logs-viewer/logs/",
     "encoding": "utf8"
 }

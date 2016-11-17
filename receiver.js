@@ -19,7 +19,9 @@ function runServers(users) {
         let server = tcp.createServer();
         let arrayBuff = {};
         server.on("connection", socket => {
+            console.log('connetion');
             socket.on("data", (data) => {
+                console.log(data);
                 console.log(`User Port? ${user.port} User Host? ${user.host}`);
                 saveInBuffer(data, arrayBuff, user.host, user.port);
                 // if(data.filename != buff.name)

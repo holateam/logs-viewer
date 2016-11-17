@@ -9,6 +9,8 @@ let UserSchema = new Schema({
     pass: String,
     host: String,
     port: Number,
+    sessiontoken: String,
+    sessiondate: String,
     streams: [
         {
             name: String,

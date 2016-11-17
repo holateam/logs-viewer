@@ -12,6 +12,16 @@ app.get("/", (req, res) => {
     res.sendFile(__dirname + "/public/index.html");
 });
 
+app.get("/login", (req, res) => {
+    app.use(express.static(__dirname + "/public/"));
+    res.sendFile(__dirname + "/public/views/login.html");
+});
+
+app.get("/register", (req, res) => {
+    app.use(express.static(__dirname + "/public/"));
+    res.sendFile(__dirname + "/public/views/register.html");
+});
+
 io.sockets.on('connection', (socket) => {
     let obj = {
         filters: [],
@@ -19,8 +29,17 @@ io.sockets.on('connection', (socket) => {
         limit: 20,
         heartbeatInterval: 2000,
         userId: 'localhost' + '30000',
-        reverseDirection: true, // false = the direction of the reader from old to new, true = from new to old
+        reverseDirection: null, // false = the direction of the reader from old to new, true = from new to old
     };
+    let user = {
+        username: "",
+        host: "",
+        port: null,
+        streams: [],
+        filters: "",
+        reverseDirection: null,
+    };
+
     let myAggregator = null;
 
     socket.emit('get logs', {
@@ -38,12 +57,24 @@ io.sockets.on('connection', (socket) => {
     // myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
     //     obj.reverseDirection, callback);
     // myAggregator.start();
+    socket.on('cookie-session', (data) => {
+        console.log(data);
+        db_query.cookieSession(data).then((result) => {
+            socket.emit('cookie-session', result);
+        });
+    });
+
+    socket.on('sign up', (data) => {
+        db_query.signUp(data).then((result) => {
+            socket.emit('sign up', result);
+        }).catch((result) => {
+            console.log('Error sign up');
+        });
+    });
 
     socket.on('sign in', (data) => {
-
         db_query.signIn(data).then((result) => {
-            console.log(result);
-            socket.emit('sing in', result);
+            socket.emit('sign in', result);
         }, (err) => {
             console.log(`Error mongoDB ${err}`);
         });
@@ -60,13 +91,18 @@ io.sockets.on('connection', (socket) => {
     });
 
     socket.on('get logs old', (data) => {
+
         console.log("socket.on('get logs old')");
-        if (obj.reverseDirection == true) {
+        if (obj.reverseDirection == true ) {
+            user = data;
             myAggregator.resume();
         } else {
-            obj.reverseDirection = true;
-            myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
-                data.reverseDirection, callback);
+            user = data;
+            // obj.reverseDirection = true;
+            // myAggregator = aggregator.createAggregator(obj.userId, obj.streamsId, obj.filters,
+            //     data.reverseDirection, callback);
+            myAggregator = aggregator.createAggregator(user.host + user.port, user.streams, user.filters,
+                user.reverseDirection, callback);
             myAggregator.start();
         }
     });
