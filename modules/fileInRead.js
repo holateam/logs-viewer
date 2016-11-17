@@ -3,13 +3,13 @@ const config = require('../config.json');
 
 let fileInRead = function (limit, heartbeatInterval, filters, streamId, pointTimestamp,
                            reverseDirection, filename, pauseSearch, callback) {
-
+    console.log(filename);
     this.rstream = new fs.ReadStream(filename, {encoding: "utf8"});
     this.start = () => {
 
         this.rstream.on('data', (chunk) => {
             setTimeout(() => {
-                callback(streamId, chunk);
+                callback(streamId, chunk.split('\n'));
             }, 1000);
             this.rstream.pause();
         });

@@ -31,15 +31,12 @@ module.exports.cookieSession = (cookie) => {
             }
             if (user) {
                 if (user.sessiontoken == token) {
-                    console.log(user);
-
                     resolve({
                         username: user.username, email: user.email, host: user.host,
                         port: user.port, streams: user.streams.map(item => item.name)
                     });
                 }
             } else {
-                console.log(`Invalid token`);
                 reject({'msg': 'Invalid token'});
             }
         })

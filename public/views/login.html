@@ -77,7 +77,7 @@
 //            user.host = data.host;
 //            user.port = data.port;
 //            user.streamsId = user.streamsId;
-            var date = new Date(new Date().getTime() + 60 * 1000);
+            var date = new Date(new Date().getTime() + 60 * 10000);
 //            document.cookie = "user_session="+data.username+"; path=/; expires=" + date.toUTCString();
             document.cookie = "token="+data.token+"; path=/; expires=" + date.toUTCString();
             location.href='/';

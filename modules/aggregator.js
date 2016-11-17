@@ -4,7 +4,7 @@ const searchInBuffer = require('./searchInBuffer');
 let firstTimestamp = new Date(); // first Timestamp
 let lastTimestamp = new Date(); // last Timestamp
 let pointTimestamp = '';
-let limit = 40; // ??
+let limit = 5; // ??
 let heartbeatInterval = 1000; // ??
 let logSearchers = null;
 
@@ -28,15 +28,13 @@ let createAggregator = (userId, streamsId, filters, reverseDirection, callback) 
         limit -= 5;
         console.log("Limit: " + limit);
         if (limit > 0) {
-            console.log("Finish search");
+            console.log("Resume search");
             logSearchers.forEach((searcher) => {
                 if (searcher.streamId == streamId) {
                     searcher.resume();
                 }
             });
         }
-
-        console.log('buff' + JSON.stringify(logs));
         callback(logs);
         // callback(logs.split('\n'));
         // if (!buffers[streamId]) {
@@ -90,7 +88,8 @@ let createAggregator = (userId, streamsId, filters, reverseDirection, callback) 
                 searcher.stop();
             });
         },
-        resume: (options) => {
+        resume: () => {
+            limit = 15;
             logSearchers.forEach((searcher) => {
                 searcher.resume();
             });

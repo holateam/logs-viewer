@@ -2,7 +2,7 @@ const searchInBuffer = require('./searchInBuffer');
 const fileInRead = require('./fileInRead');
 const fileInReadReverse = require('./fileInReadReverse');
 
-let filenameGetter = "/home/lex/myProject/logs-viewer/logs/localhost:30000/2016/tolstoi_l_n__voina_i_mir.txt";
+let filenameGetter = "/home/lex/myProject/logs-viewer/logs/localhost:30000/tolstoi_l_n__voina_i_mir.txt";
 // let filenameGetter = (userId, reverseDirection) => {
 //     let arrayFilename = [];
 //      // Todo some function getter file
@@ -19,12 +19,11 @@ function LogSearcher(userId, streamId, filters, limit, heartbeatInterval, pointT
     this.reverseDirection = reverseDirection;
     this.pauseSearch = false;
     this.callback = callback;
-    this.fileInRead = (reverseDirection) ? new fileInReadReverse(this.limit, this.heartbeatInterval, this.filters,
-        this.streamId, this.pointTimestamp, this.reverseDirection,
-        filenameGetter, this.pauseSearch, this.callback) : new fileInRead(this.limit, this.heartbeatInterval, this.filters,
-        this.streamId, this.pointTimestamp, this.reverseDirection,
-        filenameGetter, this.pauseSearch, this.callback
-    );
+    this.fileInRead = (reverseDirection) ?
+        new fileInReadReverse(this.limit, this.heartbeatInterval, this.filters, this.streamId, this.pointTimestamp,
+            this.reverseDirection, filenameGetter, this.pauseSearch, this.callback) :
+        new fileInRead(this.limit, this.heartbeatInterval, this.filters, this.streamId, this.pointTimestamp,
+            this.reverseDirection, filenameGetter, this.pauseSearch, this.callback);
 
     this.start = () => {
         console.log('Start');

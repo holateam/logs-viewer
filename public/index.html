@@ -57,13 +57,6 @@
                 socket.emit('get logs old', user);
             });
 
-            socket.on('sign in', function (data) {
-                user.name = data.name;
-                user.host = data.host;
-                user.port = data.port;
-                user.streamsId = user.streamsId;
-            });
-
             socket.on('get logs', function (data) {
                 console.log(data.data.toString());
                 data.logs.forEach(function (li) {
@@ -92,19 +85,19 @@
                 if (scrollTop + height == scrollHeight) {
                     console.log('bottom found');
                     user.reverseDirection = false;
-//            socket.emit('get logs new', user);
+            socket.emit('get logs new', user);
                 }
             });
 
-            $('#filter').keyup(function (event) {
-                var keyCode = event.keyCode;
-                if (keyCode === 13) {
-                    var filter = $('#filter').val();
-                    console.log(filter);
-                    user.filter = filter;
-                    socket.emit('get logs', user);
-                }
-            });
+//            $('#filter').keyup(function (event) {
+//                var keyCode = event.keyCode;
+//                if (keyCode === 13) {
+//                    var filter = $('#filter').val();
+//                    console.log(filter);
+//                    user.filter = filter;
+//                    socket.emit('get logs', user);
+//                }
+//            });
 
             //    socket.on('news', function (data){
             //        console.log(data);
