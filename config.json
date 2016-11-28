@@ -1,9 +1,0 @@
-{
-    "port": 8080,
-    "mongoose": {
-        "urli": "mongodb://alex:root@ds053186.mlab.com:53186/hola"
-    },
-    "session": {},
-    "dirname": "/home/lex/myProject/logs-viewer/logs/",
-    "encoding": "utf8"
-}
