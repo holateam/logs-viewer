@@ -2,7 +2,7 @@ const fs = require('fs');
 const config = require('../config.json');
 
 let fileInRead = function (limit, heartbeatInterval, filters, streamId, pointTimestamp,
-                           reverseDirection, filename, pauseSearch, callback) {
+                           reverseDirection, filename, callback) {
     console.log(filename);
     this.rstream = new fs.ReadStream(filename, {encoding: "utf8"});
     this.start = () => {

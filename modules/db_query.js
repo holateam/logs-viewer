@@ -2,6 +2,17 @@ const Users = require('./userSchema');
 const config = require('../config.json');
 const bCrypt = require('bcrypt');
 
+
+module.exports.getStreamFiles = () => {
+  let promise = new Promise ((resolve, reject) => {
+      Users.findOne({"host": "127.0.0.1", "port": "30000", "streams.name": "log"},{"streams.$": 1}, (err, user) => {
+          console.log(user);
+      });
+
+  });
+    return promise;
+};
+
 module.exports.getUsers = () => {
     let promise = new Promise((resolve, reject) => {
         Users.find({}, (err, res) => {

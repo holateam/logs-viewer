@@ -68,6 +68,11 @@ io.sockets.on('connection', (socket) => {
         });
     });
 
+    socket.on('disconnect', function () {
+        console.log("disconect");
+        io.emit('user disconnected');
+    });
+
     // socket.on('get logs', (data) => {
     //     // Todo get user options in DB -> query data.port, data.host, data.streamsId,
     //     obj.filters.push(data.filter);
@@ -85,7 +90,7 @@ io.sockets.on('connection', (socket) => {
             myAggregator.resume();
         } else {
             user = data;
-            myAggregator = aggregator.createAggregator(user.host + user.port, user.streams, user.filters,
+            myAggregator = aggregator.createAggregator(user.host + user.port, ['log']/*user.streams*/, user.filters,
                 user.reverseDirection, callback);
             myAggregator.start();
         }

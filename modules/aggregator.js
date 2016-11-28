@@ -11,7 +11,7 @@ let logSearchers = null;
 let createAggregator = (userId, streamsId, filters, reverseDirection, callback) => {
     let count = 0; // ?
     let buffers = {}; // buffer logs?
-    limit = 20;
+    limit = 100;
     pointTimestamp = (reverseDirection) ? lastTimestamp : firstTimestamp;
 
     logSearchers = streamsId.map((streamId) => {
@@ -25,7 +25,7 @@ let createAggregator = (userId, streamsId, filters, reverseDirection, callback) 
     function aggregateLogs(streamId, logs, pointTimestamp, finish) {
         console.log(`aggregatorsLogs -> streamId: ${streamId}`);
         // console.log(`aggregatorsLogs -> logs: ${logs}`);
-        limit -= 5;
+        limit -= 1;
         console.log("Limit: " + limit);
         if (limit > 0) {
             console.log("Resume search");

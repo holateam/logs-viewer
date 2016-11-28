@@ -4,7 +4,7 @@ const config = require('../config.json');
 
 function saveInFile(userName, namefile, buffer, callback) {
     let dirname = generatedDirectoryAndFileName(userName);
-    let fileName = new Date().toISOString() + '-' + namefile + '.txt';
+    let fileName = new Date().toISOString() + '__' + namefile + '.txt';
     let address = dirname + fileName;
 
     // mkdirp.sync(dirname);
